@@ -17,6 +17,10 @@ from app.db.base import Base
 
 # Import all models here so Alembic can detect them
 from app.models.user import User  # noqa
+from app.models.team import Team  # noqa
+from app.models.player import Player  # noqa
+from app.models.auction import Auction, Bid  # noqa
+from app.models.otp import OTP  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

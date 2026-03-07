@@ -4,7 +4,7 @@ Auction Database Model
 This module defines the Auction table structure for cricket auctions.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -62,16 +62,60 @@ class Auction(Base):
     max_players_per_team = Column(Integer, default=15, nullable=False)
 
     # Creator
-    created_by = Column(Integer, nullable=True)  # User ID
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # SQLAlchemy Relationships
-    # teams = relationship("Team", back_populates="auction")
-    # players = relationship("Player", back_populates="auction")
+    teams = relationship("Team", back_populates="auction")
+    players = relationship("Player", back_populates="auction")
+    bids = relationship("Bid", back_populates="auction")
 
     def __repr__(self):
         """String representation of Auction object"""
         return f"<Auction(id={self.id}, title='{self.title}', status='{self.status}')>"
+
+
+class Bid(Base):
+    """
+    Bid model for tracking auction bids.
+
+    Attributes:
+        id: Primary key
+        auction_id: Foreign key to Auction
+        player_id: Foreign key to Player being bid on
+        team_id: Foreign key to Team placing the bid
+        bid_amount: Amount of the bid
+        is_winning_bid: Flag to indicate if this is the winning bid
+        created_at: Bid timestamp
+    """
+
+    __tablename__ = "bids"
+
+    # Primary Key
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+
+    # Foreign Keys
+    auction_id = Column(Integer, ForeignKey("auctions.id", ondelete="CASCADE"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id", ondelete="CASCADE"), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id", ondelete="SET NULL"), nullable=True)
+
+    # Bid Information
+    bid_amount = Column(Float, nullable=False)
+    is_winning_bid = Column(Boolean, default=False, nullable=False)
+
+    # Timestamp
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # SQLAlchemy Relationships
+    auction = relationship("Auction", back_populates="bids")
+    player = relationship("Player", back_populates="bids")
+    team = relationship("Team", back_populates="bids")
+
+    def __repr__(self):
+        """String representation of Bid object"""
+        return f"<Bid(id={self.id}, player_id={self.player_id}, team_id={self.team_id}, amount={self.bid_amount})>"
+
+

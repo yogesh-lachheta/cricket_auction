@@ -6,6 +6,7 @@ Users can be admins, team owners, or viewers.
 """
 
 from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
 
@@ -38,10 +39,23 @@ class User(Base):
     # Authentication Fields
     email = Column(String(255), unique=True, index=True, nullable=False)
     username = Column(String(100), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=True)  # Nullable for OAuth users
+    mobile = Column(String(20), unique=True, index=True, nullable=True)
 
     # User Information
     full_name = Column(String(200), nullable=True)
+
+    # OAuth Fields
+    oauth_provider = Column(
+        String(50),
+        nullable=True,
+        comment="OAuth provider: google, microsoft, or null for manual signup"
+    )
+    oauth_id = Column(String(255), nullable=True, comment="OAuth provider user ID")
+
+    # Verification Status
+    email_verified = Column(Boolean, default=False, nullable=False)
+    mobile_verified = Column(Boolean, default=False, nullable=False)
 
     # Role & Permissions
     role = Column(
@@ -67,6 +81,9 @@ class User(Base):
         onupdate=func.now(),
         nullable=False
     )
+
+    # Relationships
+    teams = relationship("Team", back_populates="user")
 
     def __repr__(self):
         """String representation of User object"""

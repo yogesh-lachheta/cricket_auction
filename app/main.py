@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.config import settings
 from app.db.session import engine, get_db
+from app.api.v1.routes.auth import router as auth_router
 
 app = FastAPI(
     title="Cricket Auction Platform",
@@ -19,6 +20,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API Routes
+app.include_router(auth_router, prefix="/api/v1/auth")
 
 
 @app.on_event("startup")

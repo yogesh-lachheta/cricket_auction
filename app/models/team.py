@@ -64,6 +64,7 @@ class Team(Base):
     user = relationship("User", back_populates="teams")
     auction = relationship("Auction", back_populates="teams")
     players = relationship("Player", back_populates="team", cascade="all, delete-orphan")
+    bids = relationship("Bid", back_populates="team", cascade="all, delete-orphan")
 
     def __repr__(self):
         """String representation of Team object"""
