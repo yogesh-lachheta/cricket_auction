@@ -36,6 +36,7 @@ class Team(Base):
 
     # Team Information
     name = Column(String(200), nullable=False, index=True)
+    short_name = Column(String(50), nullable=False, index=True)
     owner_name = Column(String(200), nullable=True)
     logo_url = Column(String(500), nullable=True)
 
@@ -46,6 +47,7 @@ class Team(Base):
     # Player Limits
     max_players = Column(Integer, default=15, nullable=False)
     current_players = Column(Integer, default=0, nullable=False)
+    overseas_count = Column(Integer, default=0, nullable=False)
 
     # Relationships
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
@@ -59,9 +61,9 @@ class Team(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # SQLAlchemy Relationships
-    # user = relationship("User", back_populates="teams")
-    # auction = relationship("Auction", back_populates="teams")
-    # players = relationship("Player", back_populates="team")
+    user = relationship("User", back_populates="teams")
+    auction = relationship("Auction", back_populates="teams")
+    players = relationship("Player", back_populates="team", cascade="all, delete-orphan")
 
     def __repr__(self):
         """String representation of Team object"""

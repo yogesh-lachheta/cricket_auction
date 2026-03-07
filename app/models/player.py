@@ -58,6 +58,7 @@ class Player(Base):
     role = Column(Enum(PlayerRole), nullable=False)
     country = Column(String(100), nullable=False)
     age = Column(Integer, nullable=True)
+    is_overseas = Column(Boolean, default=False, nullable=False)
 
     # Pricing
     base_price = Column(Float, nullable=False)
@@ -78,8 +79,8 @@ class Player(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # SQLAlchemy Relationships
-    # team = relationship("Team", back_populates="players")
-    # auction = relationship("Auction", back_populates="players")
+    team = relationship("Team", back_populates="players")
+    auction = relationship("Auction", back_populates="players")
 
     def __repr__(self):
         """String representation of Player object"""
