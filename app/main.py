@@ -5,6 +5,9 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.db.session import engine, get_db
 from app.api.v1.routes.auth import router as auth_router
+from app.api.v1.routes.teams import router as teams_router
+from app.api.v1.routes.players import router as players_router
+from app.api.v1.routes.auctions import router as auctions_router
 
 app = FastAPI(
     title="Cricket Auction Platform",
@@ -23,6 +26,9 @@ app.add_middleware(
 
 # Include API Routes
 app.include_router(auth_router, prefix="/api/v1/auth")
+app.include_router(teams_router, prefix="/api/v1/teams")
+app.include_router(players_router, prefix="/api/v1/players")
+app.include_router(auctions_router, prefix="/api/v1/auctions")
 
 
 @app.on_event("startup")
