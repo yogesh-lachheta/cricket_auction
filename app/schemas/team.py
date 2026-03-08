@@ -14,7 +14,7 @@ class TeamBase(BaseModel):
     name: str = Field(..., min_length=3, max_length=200, description="Team name")
     short_name: str = Field(..., min_length=2, max_length=50, description="Team short name (e.g., 'MI', 'CSK')")
     owner_name: Optional[str] = Field(None, max_length=200, description="Team owner's name")
-    logo_url: Optional[str] = Field(None, max_length=500, description="Team logo URL")
+    logo_url: Optional[str] = Field(None, description="Team logo URL or base64 encoded image")
     total_budget: float = Field(..., gt=0, description="Total budget (must be positive)")
     max_players: int = Field(default=15, ge=11, le=25, description="Maximum players allowed (11-25)")
 
@@ -40,7 +40,7 @@ class TeamUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=3, max_length=200)
     short_name: Optional[str] = Field(None, min_length=2, max_length=50)
     owner_name: Optional[str] = Field(None, max_length=200)
-    logo_url: Optional[str] = Field(None, max_length=500)
+    logo_url: Optional[str] = Field(None, description="Team logo URL or base64 encoded image")
     total_budget: Optional[float] = Field(None, gt=0)
     remaining_budget: Optional[float] = Field(None, ge=0)
     current_players: Optional[int] = Field(None, ge=0)

@@ -4,7 +4,7 @@ Team Database Model
 This module defines the Team table structure for auction teams.
 """
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -38,7 +38,7 @@ class Team(Base):
     name = Column(String(200), nullable=False, index=True)
     short_name = Column(String(50), nullable=False, index=True)
     owner_name = Column(String(200), nullable=True)
-    logo_url = Column(String(500), nullable=True)
+    logo_url = Column(Text, nullable=True)  # Changed to Text to support base64 encoded images
 
     # Budget Management
     total_budget = Column(Float, nullable=False)

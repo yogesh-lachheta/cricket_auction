@@ -80,7 +80,7 @@ class Player(Base):
 
     # SQLAlchemy Relationships
     team = relationship("Team", back_populates="players")
-    auction = relationship("Auction", back_populates="players")
+    auction = relationship("Auction", back_populates="players", foreign_keys=[auction_id])
     bids = relationship("Bid", back_populates="player")
 
     def __repr__(self):

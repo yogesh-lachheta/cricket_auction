@@ -61,6 +61,9 @@ class Auction(Base):
     max_teams = Column(Integer, default=8, nullable=False)
     max_players_per_team = Column(Integer, default=15, nullable=False)
 
+    # Current Player Being Auctioned
+    current_player_id = Column(Integer, ForeignKey("players.id", ondelete="SET NULL"), nullable=True, index=True)
+
     # Creator
     created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
@@ -70,7 +73,8 @@ class Auction(Base):
 
     # SQLAlchemy Relationships
     teams = relationship("Team", back_populates="auction")
-    players = relationship("Player", back_populates="auction")
+    players = relationship("Player", back_populates="auction", foreign_keys="[Player.auction_id]")
+    current_player = relationship("Player", foreign_keys=[current_player_id], lazy="joined")
     bids = relationship("Bid", back_populates="auction")
 
     def __repr__(self):

@@ -63,6 +63,7 @@ class AuctionUpdate(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     is_active: Optional[bool] = None
+    current_player_id: Optional[int] = Field(None, description="Current player being auctioned")
 
     @field_validator("end_time")
     @classmethod
@@ -80,6 +81,7 @@ class AuctionInDB(AuctionBase):
     status: AuctionStatusEnum
     is_active: bool
     created_by: Optional[int]
+    current_player_id: Optional[int]
     created_at: datetime
     updated_at: datetime
 

@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Union, Any
 from jose import jwt, JWTError
 from passlib.context import CryptContext
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 from app.core.config import settings
 
 
@@ -132,3 +134,53 @@ def decode_access_token(token: str) -> Optional[dict]:
     except JWTError:
         # Token is invalid, expired, or tampered with
         return None
+
+
+# ==========================================
+# WebSocket Authentication
+# ==========================================
+
+async def get_current_user_ws(token: str, db: Session):
+    """
+    Authenticate user for WebSocket connections.
+
+    Args:
+        token: JWT token from query parameter
+        db: Database session
+
+    Returns:
+        User object if authenticated
+
+    Raises:
+        HTTPException if authentication fails
+    """
+    from app.models.user import User
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = decode_access_token(token)
+        if payload is None:
+            raise credentials_exception
+
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.username == username).first()
+    if user is None:
+        raise credentials_exception
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Inactive user"
+        )
+
+    return user

@@ -271,3 +271,94 @@ def cancel_auction(
     """
     auction = AuctionService.cancel_auction(db, auction_id, current_user)
     return auction
+
+
+@router.post(
+    "/{auction_id}/set-current-player/{player_id}",
+    response_model=AuctionResponse,
+    summary="Set current player for auction",
+    description="Set the current player being auctioned. Requires admin or auctioneer role."
+)
+def set_current_player(
+    auction_id: int,
+    player_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Set the current player for auction.
+
+    Args:
+        auction_id: Auction ID
+        player_id: Player ID to set as current
+        db: Database session
+        current_user: Authenticated user
+
+    Returns:
+        AuctionResponse: Updated auction details
+
+    Raises:
+        HTTPException 404: If auction or player not found
+        HTTPException 403: If user doesn't have permission
+        HTTPException 400: If player is already sold or doesn't belong to auction
+    """
+    from app.models.auction import Auction
+    from app.models.player import Player
+
+    # Check user permission
+    if current_user.role not in ["admin", "auctioneer"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin/auctioneer can set current player"
+        )
+
+    # Get auction
+    auction = db.query(Auction).filter(Auction.id == auction_id).first()
+    if not auction:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Auction not found"
+        )
+
+    # Get player
+    player = db.query(Player).filter(Player.id == player_id).first()
+    if not player:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Player not found"
+        )
+
+    # Validate player belongs to auction
+    if player.auction_id != auction_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Player does not belong to this auction"
+        )
+
+    # Validate player is not sold
+    if player.is_sold:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Player is already sold"
+        )
+
+    # Update auction current player
+    auction.current_player_id = player_id
+    db.commit()
+    db.refresh(auction)
+
+    # Broadcast to WebSocket clients
+    from app.core.websocket_manager import manager
+    import asyncio
+
+    async def broadcast_player_change():
+        await manager.broadcast_auction_status(
+            auction_id=auction_id,
+            status=auction.status.value,
+            current_player_id=player_id
+        )
+
+    # Run broadcast in background
+    asyncio.create_task(broadcast_player_change())
+
+    return auction
